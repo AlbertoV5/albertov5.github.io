@@ -2,30 +2,28 @@
 #+PROPERTY: header-args:sql :results value html
 
 #+NAME: attr_wrap
-#+BEGIN_SRC python :var data="" :results silent
+#+BEGIN_SRC python :var data="" :results silent :exports none
 import xml.etree.ElementTree as ET
 
-# str
-table_string = data.split("\n")
-headers = table_string[0].split("\t")
-rows = table_string[1:-1]
+def build_row(parent, data, tag):
+    child = ET.SubElement(parent, "tr")
+    for s in data.split("\t"):
+        ET.SubElement(child, tag).text = s
+    return child
 # XML
+data = data.split("\n")
 table = ET.Element("table")
-head = ET.SubElement(table, "tr")
-for h in headers:
-    ET.SubElement(head, "th").text = h
-for r in rows:
-    row = ET.SubElement(table, "tr")
-    for cell in r.split("\t"):
-        ET.SubElement(row, "td").text = cell
+build_row(table, data[0], "th")
+for row in data[1:-1]:
+    build_row(table, row, "td")
 ET.dump(table)
 #+END_SRC
 
 
 #+begin_src sql :post attr_wrap(data=*this*)
 SELECT *
-        FROM departments
-        LIMIT 3;
+FROM departments
+LIMIT 3;
 #+end_src
 
 #+RESULTS:
